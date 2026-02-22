@@ -4,6 +4,10 @@ use regex::{Captures, Regex};
 const DEFAULT_TITLE: &str = "Page Title";
 const DEFAULT_DATE: &str = "";
 
+const INCLUDE_PATH: &str = ".ssg/include/";
+const HEADER_PATH: &str = ".ssg/header.html";
+const FOOTER_PATH: &str = ".ssg/footer.html";
+
 pub fn file(src: String, mut dest: File) {
     let mut do_header = true;
     let mut do_footer = true;
@@ -33,11 +37,12 @@ pub fn file(src: String, mut dest: File) {
     let mut parse = String::new();
 
     if do_header {
-        let hpath = Path::new(".ssg/header.html");
+        let hpath = Path::new(HEADER_PATH);
         if hpath.exists() {
             parse = read_to_string(hpath).unwrap()
                 .replace("+title+", title)
                 .replace("+date+", date);
+            parse.push('\n');
         }
     }
     
@@ -47,12 +52,15 @@ pub fn file(src: String, mut dest: File) {
     let incl_re = Regex::new(r"\[\[include (.*?)\]\]").unwrap();
     for line in lines {
         parse.push('\n');
-        let line = incl_re.replace_all(line, |c: &Captures| include_file(Path::new(&c[1]), title, date));
+        let replace = |c: &Captures| include_file(Path::new(&format!("{}{}", INCLUDE_PATH, &c[1])), title, date);
+        let line = incl_re.replace_all(line, replace);
         parse.push_str(&line);
     }
 
     if do_footer {
-        let fpath = Path::new(".ssg/footer.html");
+        parse.push('\n');
+        parse.push('\n');
+        let fpath = Path::new(FOOTER_PATH);
         if fpath.exists() {
             parse.push_str(&read_to_string(fpath).unwrap()
                 .replace("+title+", title)

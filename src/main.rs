@@ -9,7 +9,7 @@ struct BuildArgs {
 }
 
 fn main() {
-    
+    process::file(std::fs::read_to_string("test.md").unwrap(), std::fs::File::create("test.html").unwrap());
 }
 
 fn unknown_command(cmd: &str) {
