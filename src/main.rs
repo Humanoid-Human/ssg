@@ -1,13 +1,14 @@
-use std::env;
+// use std::env;
 use clap::Parser;
 
 mod build;
+mod walker;
+mod process;
 
 #[derive(Parser, Debug)]
 struct BuildArgs {
     build_drafts: bool
 }
-
 
 fn main() {
     env::args().next();
