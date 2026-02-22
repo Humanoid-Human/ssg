@@ -1,17 +1,30 @@
-use clap::Parser;
+use std::{path::PathBuf, fs};
 
 mod walker;
 mod process;
-
-#[derive(Parser, Debug)]
-struct BuildArgs {
-    build_drafts: bool
-}
+mod config;
 
 fn main() {
-    process::file(std::fs::read_to_string("test.md").unwrap(), std::fs::File::create("test.html").unwrap());
-}
+    let mut args = std::env::args();
+    args.next();
+    match args.next().expect("No command given").as_ref() {
+        "init" => {
+            let _ = fs::File::create("ssg.toml");
+            let _ = fs::create_dir("include");
+            let _ = fs::create_dir("src");
+            let _ = fs::create_dir("site");
+            let _ = fs::File::create("src/index.md");
+        },
+        "build" => {
+            let mut config = config::Config::default();
+            config.update(PathBuf::from("ssg.toml"));
 
-fn unknown_command(cmd: &str) {
-    println!("Unknown command: {}", cmd);
+            walker::walk_dir(PathBuf::from(&config.src_path),
+                PathBuf::from(&config.dest_path),
+                &config);
+        },
+        _ => {
+            panic!("Unrecognized command");
+        }
+    }   
 }

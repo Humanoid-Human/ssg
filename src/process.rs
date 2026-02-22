@@ -1,25 +1,19 @@
 use std::{io::Write, fs::{File, read_to_string}, path::Path};
 use regex::{Captures, Regex};
+use crate::config::Config;
 
-const DEFAULT_TITLE: &str = "Page Title";
-const DEFAULT_DATE: &str = "";
-
-const INCLUDE_PATH: &str = ".ssg/include/";
-const HEADER_PATH: &str = ".ssg/header.html";
-const FOOTER_PATH: &str = ".ssg/footer.html";
-
-pub fn file(src: String, mut dest: File) {
+pub fn file(src: String, mut dest: File, config: &Config) {
     let mut do_header = true;
     let mut do_footer = true;
-    let mut title = DEFAULT_TITLE;
-    let mut date = DEFAULT_DATE;
+    let mut title = config.default_title.as_ref();
+    let mut date = config.default_date.as_ref();
 
     let mut startline = 0;
     for (num, line) in src.lines().enumerate() {
         let mut i = line.splitn(2, ": ");
         match i.next().unwrap() {
-            "title" => title = i.next().unwrap_or(DEFAULT_TITLE),
-            "date" => date = i.next().unwrap_or(DEFAULT_DATE),
+            "title" => title = i.next().unwrap_or(&config.default_title),
+            "date" => date = i.next().unwrap_or(&config.default_date),
             "header" => if let Some(b) = i.next() && b == "false" { do_header = false; },
             "footer" => if let Some(b) = i.next() && b == "false" { do_footer = false; },
             "++++" => { startline = num + 1; break; },
@@ -30,14 +24,15 @@ pub fn file(src: String, mut dest: File) {
     if startline == 0 {
         do_header = true;
         do_footer = true;
-        title = DEFAULT_TITLE;
-        date = DEFAULT_DATE;
+        title = &config.default_title;
+        date = &config.default_date;
     }
 
     let mut parse = String::new();
 
     if do_header {
-        let hpath = Path::new(HEADER_PATH);
+        let hpath = config.header_path();
+        let hpath = Path::new(&hpath);
         if hpath.exists() {
             parse = read_to_string(hpath).unwrap()
                 .replace("+title+", title)
@@ -52,7 +47,8 @@ pub fn file(src: String, mut dest: File) {
     let incl_re = Regex::new(r"\[\[include (.*?)\]\]").unwrap();
     for line in lines {
         parse.push('\n');
-        let replace = |c: &Captures| include_file(Path::new(&format!("{}{}", INCLUDE_PATH, &c[1])), title, date);
+        let replace = |c: &Captures|
+            include_file(Path::new(&format!("{}{}", config.include_path, &c[1])), title, date);
         let line = incl_re.replace_all(line, replace);
         parse.push_str(&line);
     }
@@ -60,7 +56,8 @@ pub fn file(src: String, mut dest: File) {
     if do_footer {
         parse.push('\n');
         parse.push('\n');
-        let fpath = Path::new(FOOTER_PATH);
+        let fpath = config.footer_path();
+        let fpath = Path::new(&fpath);
         if fpath.exists() {
             parse.push_str(&read_to_string(fpath).unwrap()
                 .replace("+title+", title)
