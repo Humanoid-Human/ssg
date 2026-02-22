@@ -1,22 +1,21 @@
 use std::{io::Write, fs::{File, read_to_string}, path::Path};
 use regex::{Captures, Regex};
-use markdown;
 
-const default_title: &str = "Page Title";
-const default_date: &str = "";
+const DEFAULT_TITLE: &str = "Page Title";
+const DEFAULT_DATE: &str = "";
 
 pub fn file(src: String, mut dest: File) {
     let mut do_header = true;
     let mut do_footer = true;
-    let mut title = default_title;
-    let mut date = default_date;
+    let mut title = DEFAULT_TITLE;
+    let mut date = DEFAULT_DATE;
 
     let mut startline = 0;
     for (num, line) in src.lines().enumerate() {
         let mut i = line.splitn(2, ": ");
         match i.next().unwrap() {
-            "title" => title = i.next().unwrap_or(default_title),
-            "date" => date = i.next().unwrap_or(default_date),
+            "title" => title = i.next().unwrap_or(DEFAULT_TITLE),
+            "date" => date = i.next().unwrap_or(DEFAULT_DATE),
             "header" => if let Some(b) = i.next() && b == "false" { do_header = false; },
             "footer" => if let Some(b) = i.next() && b == "false" { do_footer = false; },
             "++++" => { startline = num + 1; break; },
@@ -27,8 +26,8 @@ pub fn file(src: String, mut dest: File) {
     if startline == 0 {
         do_header = true;
         do_footer = true;
-        title = default_title;
-        date = default_date;
+        title = DEFAULT_TITLE;
+        date = DEFAULT_DATE;
     }
 
     let mut parse = String::new();
@@ -45,10 +44,9 @@ pub fn file(src: String, mut dest: File) {
     let mut lines = src.lines();
     parse.push_str(lines.nth(startline).unwrap_or(""));
 
+    let incl_re = Regex::new(r"\[\[include (.*?)\]\]").unwrap();
     for line in lines {
         parse.push('\n');
-
-        let incl_re = Regex::new(r"\[\[include (.*?)\]\]").unwrap();
         let line = incl_re.replace_all(line, |c: &Captures| include_file(Path::new(&c[1]), title, date));
         parse.push_str(&line);
     }

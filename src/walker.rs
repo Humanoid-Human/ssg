@@ -15,14 +15,12 @@ pub fn copy_structure(src: PathBuf, dest: PathBuf) {
         if src_path.is_dir() {
             fs::create_dir(&dest_path).unwrap();
             copy_structure(src_path, dest_path);
+        } else if dest_path.extension().is_some_and(|x| x == "md") {
+            dest_path.set_extension("html");
+            let dest = File::create(dest_path).unwrap();
+            process::file(fs::read_to_string(src_path).unwrap(), dest);
         } else {
-            if dest_path.extension().is_some_and(|x| x == "md") {
-                dest_path.set_extension("html");
-                let dest = File::create(dest_path).unwrap();
-                process::file(fs::read_to_string(src_path).unwrap(), dest);
-            } else {
-                fs::copy(src_path, dest_path).unwrap();
-            }
+            fs::copy(src_path, dest_path).unwrap();
         }
     }
 }
