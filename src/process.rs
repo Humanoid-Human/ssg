@@ -64,8 +64,12 @@ pub fn file(src: String, mut dest: File, config: &Config) {
                 .replace("+date+", date));
         }
     }
-    
-    let html = markdown::to_html_with_options(&parse, &markdown::Options::gfm()).unwrap();
+   
+    let mut options = markdown::Options::gfm();
+    options.compile.allow_dangerous_html = true;
+    options.compile.gfm_tagfilter = false;
+
+    let html = markdown::to_html_with_options(&parse, &options).unwrap();
     dest.write_all(&html.into_bytes()).unwrap();
 }
 

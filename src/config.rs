@@ -13,11 +13,11 @@ pub struct Config {
 impl Config {
     pub fn default() -> Self {
         Self {
-            src_path:      "src".to_string(),
-            dest_path:     "site".to_string(),
+            src_path:      "src/".to_string(),
+            dest_path:     "site/".to_string(),
             default_title: "Page Title".to_string(),
             default_date:  "0000-00-00".to_string(),
-            include_path:  "include".to_string(),
+            include_path:  "include/".to_string(),
             header_name:   "header.html".to_string(),
             footer_name:   "footer.html".to_string()
         }
