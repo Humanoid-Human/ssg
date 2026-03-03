@@ -14,11 +14,11 @@ pub fn walk_dir(src: PathBuf, dest: PathBuf, config: &config::Config) {
         dest_path.push(src_path.file_name().unwrap());
         if src_path.is_dir() {
             fs::create_dir(&dest_path).unwrap();
-            walk_dir(src_path, dest_path, &config);
+            walk_dir(src_path, dest_path, config);
         } else if dest_path.extension().is_some_and(|x| x == "md") {
             dest_path.set_extension("html");
             let dest = File::create(dest_path).unwrap();
-            process::file(fs::read_to_string(src_path).unwrap(), dest, &config);
+            process::file(fs::read_to_string(src_path).unwrap(), dest, config);
         } else {
             fs::copy(src_path, dest_path).unwrap();
         }

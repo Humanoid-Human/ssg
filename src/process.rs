@@ -3,8 +3,7 @@ use regex::{Captures, Regex};
 use crate::config::Config;
 
 pub fn file(src: String, mut dest: File, config: &Config) {
-    let mut do_header = true;
-    let mut do_footer = true;
+    let mut header = Some(config.header_path());
     let mut title = config.default_title.as_ref();
     let mut date = config.default_date.as_ref();
 
@@ -14,35 +13,39 @@ pub fn file(src: String, mut dest: File, config: &Config) {
         match i.next().unwrap() {
             "title" => title = i.next().unwrap_or(&config.default_title),
             "date" => date = i.next().unwrap_or(&config.default_date),
-            "header" => if let Some(b) = i.next() && b == "false" { do_header = false; },
-            "footer" => if let Some(b) = i.next() && b == "false" { do_footer = false; },
-            "++++" => { startline = num + 1; break; },
+            "header" => if let Some(b) = i.next() {
+                if b == "none" { header = None; }
+                else { header = Some(b.to_string()); }
+            },
+            "++++" => { startline = num; break; },
             _ => ()
         }
     }
 
     if startline == 0 {
-        do_header = true;
-        do_footer = true;
+        header = Some(config.header_path());
         title = &config.default_title;
         date = &config.default_date;
     }
 
-    let mut parse = String::new();
+    let mut parse = "<!DOCTYPE html>\n<html>\n".to_string();
 
-    if do_header {
-        let hpath = config.header_path();
+    if let Some(hpath) = header {
         let hpath = Path::new(&hpath);
         if hpath.exists() {
-            parse = read_to_string(hpath).unwrap()
+            parse.push_str(&read_to_string(hpath).unwrap()
                 .replace("+title+", title)
-                .replace("+date+", date);
+                .replace("+date+", date));
             parse.push('\n');
         }
     }
+
+    parse.push_str("<body>\n");
     
     let mut lines = src.lines();
-    parse.push_str(lines.nth(startline).unwrap_or(""));
+    if startline != 0 {
+        lines.nth(startline).unwrap();
+    }
 
     let incl_re = Regex::new(r"\[\[include (.*?)\]\]").unwrap();
     for line in lines {
@@ -53,17 +56,7 @@ pub fn file(src: String, mut dest: File, config: &Config) {
         parse.push_str(&line);
     }
 
-    if do_footer {
-        parse.push('\n');
-        parse.push('\n');
-        let fpath = config.footer_path();
-        let fpath = Path::new(&fpath);
-        if fpath.exists() {
-            parse.push_str(&read_to_string(fpath).unwrap()
-                .replace("+title+", title)
-                .replace("+date+", date));
-        }
-    }
+    parse.push_str("\n</body>\n</html>");
    
     let mut options = markdown::Options::gfm();
     options.compile.allow_dangerous_html = true;

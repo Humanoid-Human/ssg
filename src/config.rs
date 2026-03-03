@@ -6,8 +6,7 @@ pub struct Config {
     pub default_title: String,
     pub default_date:  String,
     pub include_path:  String,
-    pub header_name:   String,
-    pub footer_name:   String
+    pub header_name:   String
 }
 
 impl Config {
@@ -18,8 +17,7 @@ impl Config {
             default_title: "Page Title".to_string(),
             default_date:  "0000-00-00".to_string(),
             include_path:  "include/".to_string(),
-            header_name:   "header.html".to_string(),
-            footer_name:   "footer.html".to_string()
+            header_name:   "head.html".to_string()
         }
     }
 
@@ -34,7 +32,6 @@ impl Config {
                 "default_date" => &mut self.default_title,
                 "include_path" => &mut self.include_path,
                 "header_name" => &mut self.header_name,
-                "footer_name" => &mut self.footer_name,
                 _ => continue
             };
             *thing = split.next().unwrap().trim().to_string();
@@ -49,9 +46,5 @@ impl Config {
 
     pub fn header_path(&self) -> String {
         format!("{}{}", self.include_path, self.header_name)
-    }
-
-    pub fn footer_path(&self) -> String {
-        format!("{}{}", self.include_path, self.footer_name)
     }
 }

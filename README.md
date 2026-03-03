@@ -20,16 +20,17 @@ Configure stuff in `ssg.toml`. There exist the following options:
 - `footer_name`
 
 ## Features
-The first section of page, before the `++++`, is the header. May contain the following info:
+The first section of page, before the `++++`, is the frontmatter. May contain the following info:
 - `title` (`string`): Title of the page (default `Page Title`). Ex: `title: Different Page Title`
 - `date` (`string`): Date of the page (default `0000-00-00`). Ex: `date: 1969-12-31`
-- `header` (`bool`): Whether or not to include the common header (default `true`). Ex: `header: false`
-- `footer` (`bool`): Whether or not to include the common footer (default `true`). Ex: `footer: false`
+- `head` (`string`): Path to an HTML file to use as the header, instead of the default. Set this to `none` to not include a header.
 - some other stuff probably
 
-`[[include filename]]` attempts to copy the contents of `include/filename` into the file by default. This path can be changed in the configuration.
+`[[include filename]]` attempts to copy the contents of `include/filename` into the file by default.
+This path can be changed in the configuration.
+Recursive includes are not supported; only includes present in the original file will be processed.
 
-If the relevant options are enabled, the contents of `include/head.html` and `include/foot.html` are copied into the beginning and end of the file, respectively. These paths can be changed in the configuration.
+If the relevant options are enabled, the contents of `include/head.html` are copied into the beginning of the file. This path can be changed in the configuration. Note that this feature is meant for the HTML `<head>` element. The remainder of the page content is automatically wrapped in `<body>`. 
 
 In any of the above file inclusions, `+title+` will be replaced with the title of the page, and `+date+` will be replaced with the date of the page.
 
