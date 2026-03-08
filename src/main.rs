@@ -1,4 +1,4 @@
-use std::{path::PathBuf, fs};
+use std::{path::PathBuf, fs, env::current_dir};
 
 mod walker;
 mod process;
@@ -9,22 +9,37 @@ fn main() {
     args.next();
     match args.next().expect("No command given").as_ref() {
         "init" => {
-            let _ = fs::File::create("ssg.toml");
-            let _ = fs::create_dir("include");
-            let _ = fs::create_dir("src");
-            let _ = fs::create_dir("site");
-            let _ = fs::File::create("src/index.md");
+            config::gen_default_file(PathBuf::from("ssg.conf"));
+            fs::create_dir("include").unwrap();
+            fs::create_dir("src").unwrap();
+            fs::create_dir("site").unwrap();
         },
-        "build" => {
-            let mut config = config::Config::default();
-            config.update(PathBuf::from("ssg.toml"));
-
-            walker::walk_dir(PathBuf::from(&config.src_path),
-                PathBuf::from(&config.dest_path),
-                &config);
-        },
+        "build" => build(),
         _ => {
             panic!("Unrecognized command");
         }
     }   
+}
+
+fn build() {
+    let base = find_base_dir();
+    let config = config::Config::new(base.join("ssg.conf"));
+
+    walker::walk_dir(base.join(&config.src_path),
+        base.join(&config.dest_path),
+        &config);
+}
+
+fn find_base_dir() -> PathBuf {
+    let mut curdir = current_dir().unwrap();
+    loop {
+        if curdir.join("ssg.conf").exists() {
+            return curdir;
+        }
+
+        match curdir.parent() {
+            Some(parent) => curdir = parent.to_path_buf(),
+            None => panic!("Could not find `ssg.conf` in `{}` or any parent directory", current_dir().unwrap().display())
+        }
+    }
 }
