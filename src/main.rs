@@ -1,6 +1,5 @@
 use std::{path::PathBuf, fs, env::current_dir};
 
-mod walker;
 mod process;
 mod config;
 
@@ -25,7 +24,7 @@ fn build() {
     let base = find_base_dir();
     let config = config::Config::new(base.join("ssg.conf"));
 
-    walker::walk_dir(base.join(&config.src_path),
+    process::walk_dir(base.join(&config.src_path),
         base.join(&config.dest_path),
         &config);
 }

@@ -1,4 +1,8 @@
-use std::{path::PathBuf, fs::{read_to_string, File}, io::Write};
+use std::{
+    path::PathBuf,
+    fs::{read_to_string, File},
+    io::Write
+};
 
 pub fn gen_default_file(path: PathBuf) {
     let mut f = File::create(path).unwrap();

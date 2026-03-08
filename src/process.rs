@@ -1,8 +1,34 @@
-use std::{io::Write, fs::{File, read_to_string}, path::Path};
+use std::{
+    io::Write,
+    fs, fs::{File, read_to_string},
+    path::{Path, PathBuf}
+};
 use regex::{Captures, Regex};
 use crate::config::Config;
 
-pub fn file(src: String, mut dest: File, config: &Config) {
+pub fn walk_dir(src: PathBuf, dest: PathBuf, config: &Config) {
+    if !src.is_dir() { return; }
+
+    fs::remove_dir_all(&dest).unwrap();
+    fs::create_dir(&dest).unwrap();
+
+    for entry in fs::read_dir(&src).unwrap() {
+        let src_path = entry.unwrap().path();
+        let mut dest_path = dest.join(src_path.file_name().unwrap());
+        if src_path.is_dir() {
+            fs::create_dir(&dest_path).unwrap();
+            walk_dir(src_path, dest_path, config);
+        } else if dest_path.extension().is_some_and(|x| x == "md") {
+            dest_path.set_extension("html");
+            let dest_file = File::create(dest_path).unwrap();
+            process_file(read_to_string(src_path).unwrap(), dest_file, config);
+        } else {
+            fs::copy(src_path, dest_path).unwrap();
+        }
+    }
+}
+
+fn process_file(src: String, mut dest: File, config: &Config) {
     let mut header = Some(config.header_path());
     let mut title = config.default_title.as_ref();
     let mut date = config.default_date.as_ref();
