@@ -1,16 +1,17 @@
 # ssg
-Static site generator in rust.
+Simple static site generator.
 
 By default, the source (Markdown) goes in `src`, and the output goes in `site`. These paths can be configured.
 
 ssg uses the GFM extension to CommonMark.
 
 ## Usage
-`ssg init`: Initializes the current directory
-`ssg build`: Builds all source files
+`ssg init`: Initializes the current directory. This command generates the `site`, `src`, and `include` directories, as well as `ssg.conf`.
+`ssg build`: Builds all source files. This command will remove everything in `site`, and rebuild using the contents of `src`.
+`ssg run`: Runs `ssg build` and then starts a localhost server for previewing the site, on port 8000 by default
 
 ## Configuration
-Configure stuff in `ssg.toml`. There exist the following options:
+Configure stuff in `ssg.conf`. There exist the following options:
 - `src_path`
 - `dest_path`
 - `default_title`
@@ -18,6 +19,8 @@ Configure stuff in `ssg.toml`. There exist the following options:
 - `include_path`
 - `header_name`
 - `footer_name`
+- `localhost_port`
+Modify them with the syntax `option = value`.
 
 ## Features
 The first section of page, before the `++++`, is the frontmatter. May contain the following info:
@@ -34,5 +37,10 @@ If the relevant options are enabled, the contents of `include/head.html` are cop
 
 In any of the above file inclusions, `+title+` will be replaced with the title of the page, and `+date+` will be replaced with the date of the page.
 
+## Libraries
+This project uses:
+- [`markdown`](https://crates.io/crates/markdown) (sometimes called `markdown-rs`) for Markdown parsing.
+- [`regex`](https://crates.io/crates/regex) for regex (wow!)
+
 ## Building
-Install rustc and cargo. Clone the repo. Navigate to the folder and use `cargo build --release`.
+Clone the repo and build with `cargo`.

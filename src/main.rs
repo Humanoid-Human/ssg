@@ -2,6 +2,7 @@ use std::{path::PathBuf, fs, env::current_dir};
 
 mod process;
 mod config;
+mod server;
 
 fn main() {
     let mut args = std::env::args();
