@@ -16,6 +16,7 @@ pub fn gen_default_file(path: PathBuf) {
 }
 
 pub struct Config {
+    pub base_dir:      PathBuf,
     pub src_path:      String,
     pub dest_path:     String,
     pub default_title: String,
@@ -28,6 +29,7 @@ pub struct Config {
 impl Config {
     pub fn new(path: PathBuf) -> Self {
         let mut out = Self {
+            base_dir: path.parent().unwrap().to_path_buf(),
             src_path: "".to_string(),
             dest_path: "".to_string(),
             include_path: "".to_string(),

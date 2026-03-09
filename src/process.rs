@@ -76,8 +76,14 @@ fn process_file(src: String, mut dest: File, config: &Config) {
     let incl_re = Regex::new(r"\[\[include (.*?)\]\]").unwrap();
     for line in lines {
         parse.push('\n');
-        let replace = |c: &Captures|
-            include_file(Path::new(&format!("{}{}", config.include_path, &c[1])), title, date);
+        let replace = |c: &Captures| {
+            let path = config.base_dir.join(&format!("{}{}", config.include_path, &c[1]));
+            if path.exists() {
+                return include_file(&path, title, date);
+            } else {
+                return format!("[[include {}]]", c[1].to_string());
+            }
+        };  
         let line = incl_re.replace_all(line, replace);
         parse.push_str(&line);
     }
@@ -93,8 +99,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
 }
 
 fn include_file(path: &Path, page_title: &str, page_date: &str) -> String {
-    if !path.exists() { return String::new(); }
-    
+    assert!(path.exists());
     read_to_string(path).unwrap()
         .replace("+title+", page_title)
         .replace("+date+", page_date)
