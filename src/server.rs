@@ -1,7 +1,7 @@
 use std::{
     io::{BufReader, prelude::*},
     net::{TcpListener, TcpStream},
-    path::PathBuf,
+    path::{Path, PathBuf},
     fs::read_to_string
 };
 
@@ -16,27 +16,26 @@ pub fn run_server(port: &str, base_dir: PathBuf) {
     }
 }
 
-fn handle_connection(mut stream: TcpStream, base_dir: &PathBuf) {
+fn handle_connection(mut stream: TcpStream, base_dir: &Path) {
     let request = BufReader::new(&stream).lines().next().unwrap().unwrap();
     let mut parts = request.split(" ");
     let first = parts.next();
 
     // TODO: image handling
-    let output: String;
-    if first.is_none() || first.unwrap() != "GET" {
-        output = not_found(base_dir);
+    let output = if first.is_none() || first.unwrap() != "GET" {
+        not_found(base_dir)
     } else {
         let (len, contents) = get_file(&base_dir.join(parts.next().unwrap()));
-        output = format!("{OK}\r\nContent-Length:{len}\r\n\r\n{contents}");
-    }
+        format!("{OK}\r\nContent-Length:{len}\r\n\r\n{contents}")
+    };
 
     let _ = stream.write_all(output.as_bytes());
 }
 
-fn not_found(base_dir: &PathBuf) -> String {
+fn not_found(base_dir: &Path) -> String {
     let (len, contents) = get_file(&base_dir.join("404.html"));
 
-    return format!("{NOT_FOUND}\r\nContent-Length:{len}\r\n\r\n{contents}")
+    format!("{NOT_FOUND}\r\nContent-Length:{len}\r\n\r\n{contents}")
 }
 
 fn get_file(p: &PathBuf) -> (usize, String) {

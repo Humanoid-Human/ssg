@@ -64,7 +64,7 @@ impl Config {
         out
     } 
 
-    pub fn header_path(&self) -> String {
-        format!("{}{}", self.include_path, self.header_name)
+    pub fn header_path(&self) -> PathBuf {
+        self.base_dir.join(&self.include_path).join(&self.header_name)
     }
 }

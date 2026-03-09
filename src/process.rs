@@ -1,6 +1,6 @@
 use std::{
+    fs::{self, File, read_to_string},
     io::Write,
-    fs, fs::{File, read_to_string},
     path::{Path, PathBuf}
 };
 use regex::{Captures, Regex};
@@ -28,6 +28,10 @@ pub fn walk_dir(src: PathBuf, dest: PathBuf, config: &Config) {
     }
 }
 
+fn default_replace(title: &str, date: &str) -> Vec<(String, String)> {
+    vec![("title".to_string(), title.to_string()), ("date".to_string(), date.to_string())]
+}
+
 fn process_file(src: String, mut dest: File, config: &Config) {
     let mut header = Some(config.header_path());
     let mut title = config.default_title.as_ref();
@@ -41,7 +45,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
             "date" => date = i.next().unwrap_or(&config.default_date),
             "header" => if let Some(b) = i.next() {
                 if b == "none" { header = None; }
-                else { header = Some(b.to_string()); }
+                else { header = Some(PathBuf::from(b)); }
             },
             "++++" => { startline = num; break; },
             _ => ()
@@ -56,14 +60,9 @@ fn process_file(src: String, mut dest: File, config: &Config) {
 
     let mut parse = "<!DOCTYPE html>\n<html>\n".to_string();
 
-    if let Some(hpath) = header {
-        let hpath = Path::new(&hpath);
-        if hpath.exists() {
-            parse.push_str(&read_to_string(hpath).unwrap()
-                .replace("+title+", title)
-                .replace("+date+", date));
-            parse.push('\n');
-        }
+    if let Some(hpath) = header && hpath.exists() {
+        parse.push_str(&include_file(&hpath, default_replace(title, date)));
+        parse.push('\n');
     }
 
     parse.push_str("<body>\n");
@@ -73,16 +72,26 @@ fn process_file(src: String, mut dest: File, config: &Config) {
         lines.nth(startline).unwrap();
     }
 
-    let incl_re = Regex::new(r"\[\[include (.*?)\]\]").unwrap();
+    let incl_re = Regex::new(r"\[\[include (.*?)(?:\s*\|\s*(.*?))?\]\]").unwrap();
     for line in lines {
         parse.push('\n');
         let replace = |c: &Captures| {
-            let path = config.base_dir.join(&format!("{}{}", config.include_path, &c[1]));
-            if path.exists() {
-                return include_file(&path, title, date);
-            } else {
-                return format!("[[include {}]]", c[1].to_string());
+            let path = config.base_dir.join(format!("{}{}", config.include_path, &c[1]));
+            if !path.exists() {
+                return c[0].to_string();
             }
+            
+            let mut replace_map = default_replace(title, date);
+            if let Some(opts) = &c.get(2) {
+                for pair in opts.as_str().split("|") {
+                    let mut kv = pair.splitn(2, "=");
+                    let key = kv.next().unwrap().trim();
+                    let maybe_val = kv.next();
+                    if maybe_val.is_none() { continue; }
+                    replace_map.push((key.to_string(), maybe_val.unwrap().trim().to_string()));
+                }
+            }
+            include_file(&path, replace_map)
         };  
         let line = incl_re.replace_all(line, replace);
         parse.push_str(&line);
@@ -98,9 +107,12 @@ fn process_file(src: String, mut dest: File, config: &Config) {
     dest.write_all(&html.into_bytes()).unwrap();
 }
 
-fn include_file(path: &Path, page_title: &str, page_date: &str) -> String {
+fn include_file(path: &Path, replace_map: Vec<(String, String)>) -> String {
     assert!(path.exists());
-    read_to_string(path).unwrap()
-        .replace("+title+", page_title)
-        .replace("+date+", page_date)
+    let mut s = read_to_string(path).unwrap();
+    for (key, val) in replace_map {
+        s = s.replace(&format!("+{}+", key), &val);
+    }
+
+    s
 }

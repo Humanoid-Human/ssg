@@ -8,7 +8,7 @@ ssg uses the GFM extension to CommonMark.
 ## Usage
 `ssg init`: Initializes the current directory. This command generates the `site`, `src`, and `include` directories, as well as `ssg.conf`.
 `ssg build`: Builds all source files. This command will remove everything in `site`, and rebuild using the contents of `src`.
-`ssg run`: Runs `ssg build` and then starts a localhost server for previewing the site, on port 8000 by default
+`ssg run`: Runs `ssg build` and then starts a localhost server for previewing the site, on port 8000 by default.
 
 ## Configuration
 Configure stuff in `ssg.conf`. There exist the following options:
@@ -20,7 +20,7 @@ Configure stuff in `ssg.conf`. There exist the following options:
 - `header_name`
 - `footer_name`
 - `localhost_port`
-Modify them with the syntax `option = value`.
+Modify them with the syntax `option: value`.
 
 ## Features
 The first section of page, before the `++++`, is the frontmatter. May contain the following info:
@@ -29,13 +29,18 @@ The first section of page, before the `++++`, is the frontmatter. May contain th
 - `head` (`string`): Path to an HTML file to use as the header, instead of the default. Set this to `none` to not include a header.
 - some other stuff probably
 
+### Includes
 `[[include filename]]` attempts to copy the contents of `include/filename` into the file by default.
 This path can be changed in the configuration.
 Recursive includes are not supported; only includes present in the original file will be processed.
 
-If the relevant options are enabled, the contents of `include/head.html` are copied into the beginning of the file. This path can be changed in the configuration. Note that this feature is meant for the HTML `<head>` element. The remainder of the page content is automatically wrapped in `<body>`. 
+Additionally, by default the file `include/head.html` is included into the beginning of the file.
 
 In any of the above file inclusions, `+title+` will be replaced with the title of the page, and `+date+` will be replaced with the date of the page.
+
+Additional replacements can be defined in the include statement; for example,
+`[[include page | foo = bar | baz = boo ]]`
+will include the file `include/page`, with every instance of `+foo+` replaced with `bar`, and every instance of `+baz+` replaced with `boo`.
 
 ## Libraries
 This project uses:
