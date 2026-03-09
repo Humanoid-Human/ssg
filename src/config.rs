@@ -47,6 +47,7 @@ impl Config {
                 "default_date" => &mut out.default_title,
                 "include_path" => &mut out.include_path,
                 "header_name" => &mut out.header_name,
+                "server_port" => &mut out.server_port,
                 unknown => panic!("Unexpected option {} in ssg.conf", unknown)
             };
             *thing = split.next().unwrap().trim().to_string();

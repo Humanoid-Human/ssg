@@ -13,6 +13,7 @@ fn main() {
             fs::create_dir("include").unwrap();
             fs::create_dir("src").unwrap();
             fs::create_dir("site").unwrap();
+            let _ = fs::File::create("include/head.html");
         },
         "build" => build(),
         _ => {
@@ -24,6 +25,8 @@ fn main() {
 fn build() {
     let base = find_base_dir();
     let config = config::Config::new(base.join("ssg.conf"));
+
+    println!("{}", base.display());
 
     process::walk_dir(base.join(&config.src_path),
         base.join(&config.dest_path),
