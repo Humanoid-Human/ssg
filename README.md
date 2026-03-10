@@ -1,13 +1,13 @@
 # ssg
 Simple static site generator.
 
-By default, the source (Markdown) goes in `src`, and the output goes in `site`. These paths can be configured.
+By default, the source (Markdown) goes in `src`, and the output goes in `_site`. These paths can be configured.
 
 ssg uses the GFM extension to CommonMark.
 
 ## Usage
-`ssg init`: Initializes the current directory. This command generates the `site`, `src`, and `include` directories, as well as `ssg.conf`.
-`ssg build`: Builds all source files. This command will remove everything in `site`, and rebuild using the contents of `src`.
+`ssg init`: Initializes the current directory. This command generates the `_site`, `src`, and `include` directories, as well as `ssg.conf`.
+`ssg build`: Builds all source files. This command will remove everything in `_site`, and rebuild using the contents of `src`.
 `ssg server`: Runs `ssg build` and then starts a localhost server for previewing the site, on port 8000 by default.
 
 ## Configuration
@@ -26,7 +26,7 @@ Modify them with the syntax `option: value`.
 The first section of page, before the `++++`, is the frontmatter. May contain the following info:
 - `title` (`string`): Title of the page (default `Page Title`). Ex: `title: Different Page Title`
 - `date` (`string`): Date of the page (default `0000-00-00`). Ex: `date: 1969-12-31`
-- `head` (`string`): Path to an HTML file to use as the header, instead of the default. Set this to `none` to not include a header.
+- `head` (`string`): Path to an HTML file to use as the header, instead of the default, relative to `include/`. Set this to `none` to not include a header.
 - some other stuff probably
 
 ### Includes
@@ -43,9 +43,9 @@ Additional replacements can be defined in the include statement; for example,
 will include the file `include/page`, with every instance of `+foo+` replaced with `bar`, and every instance of `+baz+` replaced with `boo`.
 
 ## Libraries
-This project uses:
-- [`markdown`](https://crates.io/crates/markdown) (sometimes called `markdown-rs`) for Markdown parsing.
-- [`regex`](https://crates.io/crates/regex) for regex (wow!)
+This project depends on the following libraries:
+- [`markdown`](https://crates.io/crates/markdown)
+- [`regex`](https://crates.io/crates/regex)
 
 ## Building
 Clone the repo and build with `cargo`.
