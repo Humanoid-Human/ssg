@@ -12,8 +12,8 @@ fn main() {
             config::gen_default_file(PathBuf::from("ssg.conf"));
             fs::create_dir("include").unwrap();
             fs::create_dir("src").unwrap();
-            fs::create_dir("site").unwrap();
-            let _ = fs::File::create("include/head.html");
+            fs::create_dir("_site").unwrap();
+            fs::File::create_new("include/head.html").unwrap();
         },
         "build" => build(),
         _ => {

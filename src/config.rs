@@ -5,9 +5,9 @@ use std::{
 };
 
 pub fn gen_default_file(path: PathBuf) {
-    let mut f = File::create(path).unwrap();
+    let mut f = File::create_new(path).unwrap();
     f.write_all(b"src_path: src/\n").unwrap();
-    f.write_all(b"dest_path: site/\n").unwrap();
+    f.write_all(b"dest_path: _site/\n").unwrap();
     f.write_all(b"include_path: include/\n").unwrap();
     f.write_all(b"header_name: head.html\n").unwrap();
     f.write_all(b"default_title: Page Title\n").unwrap();
