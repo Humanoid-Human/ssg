@@ -67,4 +67,12 @@ impl Config {
     pub fn header_path(&self) -> PathBuf {
         self.base_dir.join(&self.include_path).join(&self.header_name)
     }
+
+    pub fn abs_src(&self) -> PathBuf {
+        self.base_dir.join(&self.src_path)
+    }
+
+    pub fn abs_dest(&self) -> PathBuf {
+        self.base_dir.join(&self.dest_path)
+    }
 }

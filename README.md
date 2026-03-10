@@ -8,7 +8,7 @@ ssg uses the GFM extension to CommonMark.
 ## Usage
 `ssg init`: Initializes the current directory. This command generates the `site`, `src`, and `include` directories, as well as `ssg.conf`.
 `ssg build`: Builds all source files. This command will remove everything in `site`, and rebuild using the contents of `src`.
-`ssg run`: Runs `ssg build` and then starts a localhost server for previewing the site, on port 8000 by default.
+`ssg server`: Runs `ssg build` and then starts a localhost server for previewing the site, on port 8000 by default.
 
 ## Configuration
 Configure stuff in `ssg.conf`. There exist the following options:
@@ -19,7 +19,7 @@ Configure stuff in `ssg.conf`. There exist the following options:
 - `include_path`
 - `header_name`
 - `footer_name`
-- `localhost_port`
+- `server_port`
 Modify them with the syntax `option: value`.
 
 ## Features

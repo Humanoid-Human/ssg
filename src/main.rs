@@ -15,22 +15,21 @@ fn main() {
             fs::create_dir("_site").unwrap();
             fs::File::create_new("include/head.html").unwrap();
         },
-        "build" => build(),
+        "build" => {
+            let base = find_base_dir();
+            process::walk_dir(&config::Config::new(base.join("ssg.conf")));
+        },
+        "server" => {
+            let base = find_base_dir();
+            let config = config::Config::new(base.join("ssg.conf"));
+            process::walk_dir(&config);
+            print!("Running http server at http://127.0.0.1:{}", config.server_port);
+            server::run_server(&config.server_port, config.abs_dest());
+        }
         _ => {
             panic!("Unrecognized command");
         }
     }   
-}
-
-fn build() {
-    let base = find_base_dir();
-    let config = config::Config::new(base.join("ssg.conf"));
-
-    println!("{}", base.display());
-
-    process::walk_dir(base.join(&config.src_path),
-        base.join(&config.dest_path),
-        &config);
 }
 
 fn find_base_dir() -> PathBuf {

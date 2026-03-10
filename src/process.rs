@@ -6,7 +6,10 @@ use std::{
 use regex::{Captures, Regex};
 use crate::config::Config;
 
-pub fn walk_dir(src: PathBuf, dest: PathBuf, config: &Config) {
+pub fn walk_dir(config: &Config) {
+    let src = config.abs_src();
+    let dest = config.abs_dest();
+
     if !src.is_dir() { return; }
 
     fs::remove_dir_all(&dest).unwrap();
@@ -17,7 +20,7 @@ pub fn walk_dir(src: PathBuf, dest: PathBuf, config: &Config) {
         let mut dest_path = dest.join(src_path.file_name().unwrap());
         if src_path.is_dir() {
             fs::create_dir(&dest_path).unwrap();
-            walk_dir(src_path, dest_path, config);
+            walk_dir(config);
         } else if dest_path.extension().is_some_and(|x| x == "md") {
             dest_path.set_extension("html");
             let dest_file = File::create(dest_path).unwrap();
