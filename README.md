@@ -10,15 +10,22 @@ ssg uses the GFM extension to CommonMark.
 `ssg build`: Builds all source files. This command will remove everything in `_site`, and rebuild using the contents of `src`.
 `ssg server`: Runs `ssg build` and then starts a localhost server for previewing the site, on port 8000 by default.
 
+## Directory Structure
+- `src`: Stuff that should be processedby the tool, typically MarkDown files.
+- `static`: Stuff that should be included in the site but not processed, such as images, css files, and robots.txt. The contents of this directory are copied directly to `_site` on build.
+- `include`: Stuff that is used for includes in files in `src`.
+- `_site`: The generated site.
+- `ssg.conf`: Configuration file
+
 ## Configuration
 Configure stuff in `ssg.conf`. There exist the following options:
 - `src_path`
-- `dest_path`
+- `static_path`
+- `include_path`
+- `site_path`
+- `header_name`
 - `default_title`
 - `default_date`
-- `include_path`
-- `header_name`
-- `footer_name`
 - `server_port`
 Modify them with the syntax `option: value`.
 

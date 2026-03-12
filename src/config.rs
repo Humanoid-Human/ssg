@@ -7,8 +7,9 @@ use std::{
 pub fn gen_default_file(path: PathBuf) {
     let mut f = File::create_new(path).unwrap();
     f.write_all(b"src_path: src/\n").unwrap();
-    f.write_all(b"dest_path: _site/\n").unwrap();
+    f.write_all(b"static_path: static/\n").unwrap();
     f.write_all(b"include_path: include/\n").unwrap();
+    f.write_all(b"site_path: _site/\n").unwrap();
     f.write_all(b"header_name: head.html\n").unwrap();
     f.write_all(b"default_title: Page Title\n").unwrap();
     f.write_all(b"default_date: 0000-00-00\n").unwrap();
@@ -18,7 +19,8 @@ pub fn gen_default_file(path: PathBuf) {
 pub struct Config {
     pub base_dir:      PathBuf,
     pub src_path:      String,
-    pub dest_path:     String,
+    pub static_path:   String,
+    pub site_path:     String,
     pub default_title: String,
     pub default_date:  String,
     pub include_path:  String,
@@ -31,7 +33,8 @@ impl Config {
         let mut out = Self {
             base_dir: path.parent().unwrap().to_path_buf(),
             src_path: "".to_string(),
-            dest_path: "".to_string(),
+            static_path: "".to_string(),
+            site_path: "".to_string(),
             include_path: "".to_string(),
             header_name: "".to_string(),
             default_title: "".to_string(),
@@ -44,10 +47,11 @@ impl Config {
             let mut split = line.splitn(2, ":");
             let thing = match split.next().unwrap().trim() {
                 "src_path" => &mut out.src_path,
-                "dest_path" => &mut out.dest_path,
+                "static_path" => &mut out.static_path,
+                "include_path" => &mut out.include_path,
+                "site_path" => &mut out.site_path,
                 "default_title" => &mut out.default_title,
                 "default_date" => &mut out.default_title,
-                "include_path" => &mut out.include_path,
                 "header_name" => &mut out.header_name,
                 "server_port" => &mut out.server_port,
                 unknown => panic!("Unexpected option {} in ssg.conf", unknown)
@@ -72,7 +76,11 @@ impl Config {
         self.base_dir.join(&self.src_path)
     }
 
-    pub fn abs_dest(&self) -> PathBuf {
-        self.base_dir.join(&self.dest_path)
+    pub fn abs_static(&self) -> PathBuf {
+        self.base_dir.join(&self.static_path)
+    }
+
+    pub fn abs_site(&self) -> PathBuf {
+        self.base_dir.join(&self.site_path)
     }
 }

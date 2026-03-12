@@ -6,22 +6,24 @@ use std::{
 use regex::{Captures, Regex};
 use crate::config::Config;
 
-pub fn walk_dir(config: &Config) {
-    let src = config.abs_src();
-    let dest = config.abs_dest();
-
-    if !src.is_dir() { return; }
+pub fn run(config: &Config) {
+    let dest = config.abs_site();
 
     fs::remove_dir_all(&dest).unwrap();
     fs::create_dir(&dest).unwrap();
 
-    for entry in fs::read_dir(&src).unwrap() {
+    walk_dir(config.abs_static(), &dest, false, config);
+    walk_dir(config.abs_src(), &dest, true, config);
+}
+
+fn walk_dir(from: PathBuf, to: &Path, process: bool, config: &Config) {
+    for entry in fs::read_dir(&from).unwrap() {
         let src_path = entry.unwrap().path();
-        let mut dest_path = dest.join(src_path.file_name().unwrap());
+        let mut dest_path = to.join(src_path.file_name().unwrap());
         if src_path.is_dir() {
             fs::create_dir(&dest_path).unwrap();
-            walk_dir(config);
-        } else if dest_path.extension().is_some_and(|x| x == "md") {
+            walk_dir(src_path, &dest_path, process, config);
+        } else if process {
             dest_path.set_extension("html");
             let dest_file = File::create(dest_path).unwrap();
             process_file(read_to_string(src_path).unwrap(), dest_file, config);
