@@ -49,7 +49,13 @@ fn not_found(base_dir: &Path) -> Vec<u8> {
 
 fn get_file(p: &PathBuf) -> Option<(usize, Vec<u8>)> {
     if !p.exists() {
-        return None;
+        if p.extension().is_none() {
+            let mut h = p.clone();
+            h.set_extension("html");
+            return get_file(&h);
+        } else {
+            return None;
+        }
     }
 
     if p.is_dir() {
