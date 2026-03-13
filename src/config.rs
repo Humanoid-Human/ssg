@@ -5,15 +5,17 @@ use std::{
 };
 
 pub fn gen_default_file(path: PathBuf) {
-    let mut f = File::create_new(path).unwrap();
-    f.write_all(b"src_path: src/\n").unwrap();
-    f.write_all(b"static_path: static/\n").unwrap();
-    f.write_all(b"include_path: include/\n").unwrap();
-    f.write_all(b"site_path: _site/\n").unwrap();
-    f.write_all(b"header_name: head.html\n").unwrap();
-    f.write_all(b"default_title: Page Title\n").unwrap();
-    f.write_all(b"default_date: 0000-00-00\n").unwrap();
-    f.write_all(b"server_port: 8000\n").unwrap();
+    let mut f = File::create_new(path).expect("ssg.conf already exists");
+    f.write_all(b"
+        src_path: src/
+        static_path: static/
+        include_path: include/
+        site_path: _site/
+        header_name: head.html
+        default_title: Page Title
+        default_date: 0000-00-00
+        server_port: 8000"
+    ).expect("Failed to write to ssg.conf");
 }
 
 pub struct Config {
@@ -42,10 +44,11 @@ impl Config {
             server_port: "".to_string()
         };
 
-        assert!(path.exists());
-        for line in read_to_string(path).unwrap().lines() {
+        assert!(path.exists(), "{:?} does not exist", path);
+        for line in read_to_string(path).expect("could not open ssg.conf").lines() {
+            if line.is_empty() { continue; }
             let mut split = line.splitn(2, ":");
-            let thing = match split.next().unwrap().trim() {
+            let thing = match split.next().expect("unexpected line in ssg.conf").trim() {
                 "src_path" => &mut out.src_path,
                 "static_path" => &mut out.static_path,
                 "include_path" => &mut out.include_path,
@@ -54,9 +57,9 @@ impl Config {
                 "default_date" => &mut out.default_title,
                 "header_name" => &mut out.header_name,
                 "server_port" => &mut out.server_port,
-                unknown => panic!("Unexpected option {} in ssg.conf", unknown)
+                unknown => panic!("Unknown option {unknown} in ssg.conf")
             };
-            *thing = split.next().unwrap().trim().to_string();
+            *thing = split.next().expect("empty option in ssg.conf").trim().to_string();
             if let Some(s) = thing.strip_prefix("\"") {
                 *thing = s.to_string();
             }

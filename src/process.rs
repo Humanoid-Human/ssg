@@ -44,6 +44,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
 
     let mut startline = 0;
     for (num, line) in src.lines().enumerate() {
+        if line.is_empty() { continue; }
         let mut i = line.splitn(2, ": ");
         match i.next().unwrap() {
             "title" => title = i.next().unwrap_or(&config.default_title),
@@ -109,12 +110,12 @@ fn process_file(src: String, mut dest: File, config: &Config) {
     options.compile.gfm_tagfilter = false;
 
     let html = markdown::to_html_with_options(&parse, &options).unwrap();
-    dest.write_all(&html.into_bytes()).unwrap();
+    dest.write_all(&html.into_bytes()).expect("failed to write to file");
 }
 
 fn include_file(path: &Path, replace_map: Vec<(String, String)>) -> String {
-    assert!(path.exists());
-    let mut s = read_to_string(path).unwrap();
+    assert!(path.exists(), "{:?} does not exist", path);
+    let mut s = read_to_string(path).expect("failed to read included file");
     for (key, val) in replace_map {
         s = s.replace(&format!("+{}+", key), &val);
     }

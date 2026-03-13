@@ -10,11 +10,11 @@ fn main() {
     match args.next().expect("No command given").as_ref() {
         "init" => {
             config::gen_default_file(PathBuf::from("ssg.conf"));
-            fs::create_dir("include").unwrap();
-            fs::create_dir("src").unwrap();
-            fs::create_dir("_site").unwrap();
-            fs::create_dir("static").unwrap();
-            fs::File::create_new("include/head.html").unwrap();
+            fs::create_dir("src").expect("failed to create directory 'src'");
+            fs::create_dir("static").expect("failed to create directory 'static'");
+            fs::create_dir("include").expect("failed to create directory 'include'");
+            fs::create_dir("_site").expect("failed to create directory '_site'");
+            fs::File::create_new("include/head.html").expect("failed to create file 'include/head.html'");
         },
         "build" => {
             let base = find_base_dir();
@@ -27,14 +27,14 @@ fn main() {
             println!("Running http server at http://127.0.0.1:{}", config.server_port);
             server::run_server(&config.server_port, config.abs_site());
         }
-        _ => {
-            panic!("Unrecognized command");
+        unknown => {
+            panic!("Unrecognized command {unknown}");
         }
     }   
 }
 
 fn find_base_dir() -> PathBuf {
-    let mut curdir = current_dir().unwrap();
+    let mut curdir = current_dir().expect("current working directory is invalid");
     loop {
         if curdir.join("ssg.conf").exists() {
             return curdir;
@@ -42,7 +42,7 @@ fn find_base_dir() -> PathBuf {
 
         match curdir.parent() {
             Some(parent) => curdir = parent.to_path_buf(),
-            None => panic!("Could not find `ssg.conf` in `{}` or any parent directory", current_dir().unwrap().display())
+            None => panic!("Could not find `ssg.conf` in `{:?}` or any parent directory", curdir)
         }
     }
 }
