@@ -27,7 +27,7 @@ fn handle_connection(mut stream: TcpStream, base_dir: &Path) {
 
     // TODO: Content-Type
     if first == "GET"
-        && let Some((len, contents)) = get_file(&base_dir.join(path)) {
+        && let Some((len, contents)) = get_file(base_dir.join(path)) {
         let header = format!("{OK}\r\nContent-Length:{len}\r\n\r\n");
         let _ = stream.write_all(header.as_bytes());
         let _ = stream.write_all(&contents);
@@ -38,7 +38,7 @@ fn handle_connection(mut stream: TcpStream, base_dir: &Path) {
 
 fn not_found(base_dir: &Path) -> Vec<u8> {
     let mut out = format!("{NOT_FOUND}\r\n").into_bytes();
-    if let Some((len, mut contents)) = get_file(&base_dir.join("404.html")) {
+    if let Some((len, mut contents)) = get_file(base_dir.join("404.html")) {
         let info = format!("Content-Length:{len}\r\nContent-Type:text/html; charset=UTF-8");
         out.append(&mut info.into_bytes());
         out.append(&mut contents);
@@ -47,19 +47,25 @@ fn not_found(base_dir: &Path) -> Vec<u8> {
     out
 }
 
-fn get_file(p: &PathBuf) -> Option<(usize, Vec<u8>)> {
+fn get_file(mut p: PathBuf) -> Option<(usize, Vec<u8>)> {
     if !p.exists() {
         if p.extension().is_none() {
-            let mut h = p.clone();
-            h.set_extension("html");
-            return get_file(&h);
+            p.set_extension("html");
+            return get_file(p);
         } else {
             return None;
         }
     }
 
     if p.is_dir() {
-        return get_file(&p.join("index.html"));
+        let index = p.join("index.html");
+        if index.exists() {
+            return get_file(index);
+        } else {
+            p.set_extension("html");
+            return get_file(p);
+        }
+        
     }
 
     if let Ok(contents) = fs::read(p) {
