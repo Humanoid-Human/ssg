@@ -22,7 +22,9 @@ fn walk_dir(from: PathBuf, to: &Path, process: bool, config: &Config) {
         let src_path = entry.unwrap().path();
         let mut dest_path = to.join(src_path.file_name().unwrap());
         if src_path.is_dir() {
-            fs::create_dir(&dest_path).unwrap();
+            if !dest_path.exists() || !dest_path.is_dir() {
+                fs::create_dir(&dest_path).unwrap();
+            }
             walk_dir(src_path, &dest_path, process, config);
         } else if process {
             dest_path.set_extension("html");
