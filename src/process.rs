@@ -8,8 +8,9 @@ use crate::config::Config;
 
 pub fn run(config: &Config) {
     let dest = config.abs_site();
-
-    fs::remove_dir_all(&dest).unwrap();
+    if dest.exists() {
+        fs::remove_dir_all(&dest).unwrap();
+    }
     fs::create_dir(&dest).unwrap();
 
     walk_dir(config.abs_static(), &dest, false, config);
