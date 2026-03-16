@@ -1,8 +1,8 @@
 use std::{
+    fs,
     io::{BufReader, prelude::*},
     net::{TcpListener, TcpStream},
     path::{Path, PathBuf},
-    fs,
 };
 
 const OK: &str = "HTTP/1.1 200 OK";
@@ -20,14 +20,17 @@ fn handle_connection(mut stream: TcpStream, base_dir: &Path) {
     let request = BufReader::new(&stream).lines().next().unwrap().unwrap();
     let mut parts = request.split(" ");
     let first = parts.next();
-    if first.is_none() { return; }
+    if first.is_none() {
+        return;
+    }
 
     let first = first.unwrap();
     let path = &parts.next().unwrap()[1..];
 
     // TODO: Content-Type
     if first == "GET"
-        && let Some((len, contents)) = get_file(base_dir.join(path)) {
+        && let Some((len, contents)) = get_file(base_dir.join(path))
+    {
         let header = format!("{OK}\r\nContent-Length:{len}\r\n\r\n");
         let _ = stream.write_all(header.as_bytes());
         let _ = stream.write_all(&contents);
@@ -65,7 +68,6 @@ fn get_file(mut p: PathBuf) -> Option<(usize, Vec<u8>)> {
             p.set_extension("html");
             return get_file(p);
         }
-        
     }
 
     if let Ok(contents) = fs::read(p) {

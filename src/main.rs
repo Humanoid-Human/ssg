@@ -1,7 +1,7 @@
-use std::{path::PathBuf, fs, env::current_dir};
+use std::{env::current_dir, fs, path::PathBuf};
 
-mod process;
 mod config;
+mod process;
 mod server;
 
 fn main() {
@@ -14,23 +14,27 @@ fn main() {
             fs::create_dir("static").expect("failed to create directory 'static'");
             fs::create_dir("include").expect("failed to create directory 'include'");
             fs::create_dir("_site").expect("failed to create directory '_site'");
-            fs::File::create_new("include/head.html").expect("failed to create file 'include/head.html'");
-        },
+            fs::File::create_new("include/head.html")
+                .expect("failed to create file 'include/head.html'");
+        }
         "build" => {
             let base = find_base_dir();
             process::run(&config::Config::new(base.join("ssg.conf")));
-        },
+        }
         "server" => {
             let base = find_base_dir();
             let config = config::Config::new(base.join("ssg.conf"));
             process::run(&config);
-            println!("Running http server at http://127.0.0.1:{}", config.server_port);
+            println!(
+                "Running http server at http://127.0.0.1:{}",
+                config.server_port
+            );
             server::run_server(&config.server_port, config.abs_site());
         }
         unknown => {
             panic!("Unrecognized command {unknown}");
         }
-    }   
+    }
 }
 
 fn find_base_dir() -> PathBuf {
@@ -42,7 +46,10 @@ fn find_base_dir() -> PathBuf {
 
         match curdir.parent() {
             Some(parent) => curdir = parent.to_path_buf(),
-            None => panic!("Could not find `ssg.conf` in `{:?}` or any parent directory", curdir)
+            None => panic!(
+                "Could not find `ssg.conf` in `{:?}` or any parent directory",
+                curdir
+            ),
         }
     }
 }
