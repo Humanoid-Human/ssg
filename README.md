@@ -14,7 +14,7 @@ ssg uses the GFM extension to CommonMark.
 `ssg server`: Runs `ssg build` and then starts a localhost server for previewing the site, on port 8000 by default.
 
 ## Directory Structure
-- `src`: Stuff that should be processed by the tool, typically MarkDown files.
+- `src`: Stuff that should be processed by the tool, typically MarkDown files. The only exception is that files ending in `.html` will not be processed.
 - `static`: Stuff that should be included in the site but not processed, such as images, css files, etc.
 - `include`: Stuff that is included into files in `src`.
 - `_site`: The generated site. Do not edit files in this directory, as it is removed and re-created when the `ssg build` or `ssg server` is run.

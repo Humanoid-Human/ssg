@@ -26,7 +26,7 @@ fn walk_dir(from: PathBuf, to: &Path, process: bool, config: &Config) {
                 fs::create_dir(&dest_path).unwrap();
             }
             walk_dir(src_path, &dest_path, process, config);
-        } else if process {
+        } else if process && let Some(e) = src_path.extension() && e != "html" {
             dest_path.set_extension("html");
             let dest_file = File::create(dest_path).unwrap();
             process_file(read_to_string(src_path).unwrap(), dest_file, config);
