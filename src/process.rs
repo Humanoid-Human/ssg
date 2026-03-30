@@ -13,25 +13,41 @@ pub fn run(config: &Config) {
     }
     fs::create_dir(&dest).unwrap();
 
-    walk_dir(config.abs_static(), &dest, false, config);
-    walk_dir(config.abs_src(), &dest, true, config);
+    walk_dir(&config.abs_static(), &dest, false, config);
+    walk_dir(&config.abs_src(), &dest, true, config);
 }
 
-fn walk_dir(from: PathBuf, to: &Path, process: bool, config: &Config) {
-    for entry in fs::read_dir(&from).unwrap() {
+fn walk_dir(from: &PathBuf, to: &Path, process: bool, config: &Config) {
+    for entry in fs::read_dir(from).unwrap() {
         let src_path = entry.unwrap().path();
         let mut dest_path = to.join(src_path.file_name().unwrap());
         if src_path.is_dir() {
             if !dest_path.exists() || !dest_path.is_dir() {
                 fs::create_dir(&dest_path).unwrap();
             }
-            walk_dir(src_path, &dest_path, process, config);
-        } else if process && let Some(e) = src_path.extension() && e != "html" {
-            dest_path.set_extension("html");
-            let dest_file = File::create(dest_path).unwrap();
-            process_file(read_to_string(src_path).unwrap(), dest_file, config);
+            walk_dir(&src_path, &dest_path, process, config);
         } else {
-            fs::copy(src_path, dest_path).unwrap();
+            if let Ok(rel_path) = src_path.strip_prefix(&config.base_dir) {
+                println!("{}", rel_path.to_str().unwrap_or("unprintable path!"));
+            } else {
+                println!("{}", src_path.to_str().unwrap_or("unprintable path!"));
+            }
+
+            if process
+                && let Some(e) = src_path.extension()
+                && e != "html"
+            {
+                dest_path.set_extension("html");
+                let dest_file = File::create(dest_path).unwrap();
+                process_file(read_to_string(&src_path).unwrap(), dest_file, config);
+            } else {
+                #[cfg(target_family = "unix")]
+                let symlink = std::os::unix::fs::symlink;
+                #[cfg(target_family = "windows")]
+                let symlink = std::os::windows::fs::symlink_file;
+
+                symlink(&src_path, dest_path).unwrap();
+            }
         }
     }
 }
