@@ -108,7 +108,9 @@ fn process_file(src: String, mut dest: File, config: &Config) {
         let replace = |c: &Captures| {
             let path = config
                 .base_dir
-                .join(format!("{}{}", config.include_path, &c[1]));
+                .join(&config.include_path)
+                .join(&c[1]);
+
             if !path.exists() {
                 return c[0].to_string();
             }
@@ -137,12 +139,12 @@ fn process_file(src: String, mut dest: File, config: &Config) {
 
     let html = markdown::to_html_with_options(&parse, &options).unwrap();
     dest.write_all(&html.into_bytes())
-        .expect("failed to write to file");
+        .expect("Error: failed to write to file");
 }
 
 fn include_file(path: &Path, replace_map: Vec<(String, String)>) -> String {
     assert!(path.exists(), "{:?} does not exist", path);
-    let mut s = read_to_string(path).expect("failed to read included file");
+    let mut s = read_to_string(path).expect("Error: failed to read included file");
     for (key, val) in replace_map {
         s = s.replace(&format!("+{}+", key), &val);
     }

@@ -7,15 +7,15 @@ mod server;
 fn main() {
     let mut args = std::env::args();
     args.next();
-    match args.next().expect("No command given").as_ref() {
+    match args.next().expect("Error: no command given").as_ref() {
         "init" => {
             config::gen_default_file(PathBuf::from("ssg.conf"));
-            fs::create_dir("src").expect("failed to create directory 'src'");
-            fs::create_dir("static").expect("failed to create directory 'static'");
-            fs::create_dir("include").expect("failed to create directory 'include'");
-            fs::create_dir("_site").expect("failed to create directory '_site'");
+            fs::create_dir("src").expect("Error: failed to create directory 'src'");
+            fs::create_dir("static").expect("Error: failed to create directory 'static'");
+            fs::create_dir("include").expect("Error: failed to create directory 'include'");
+            fs::create_dir("_site").expect("Error: failed to create directory '_site'");
             fs::File::create_new("include/head.html")
-                .expect("failed to create file 'include/head.html'");
+                .expect("Error: failed to create file 'include/head.html'");
         }
         "build" => {
             let base = find_base_dir();
@@ -38,7 +38,7 @@ fn main() {
 }
 
 fn find_base_dir() -> PathBuf {
-    let mut curdir = current_dir().expect("current working directory is invalid");
+    let mut curdir = current_dir().expect("Error: current working directory is invalid");
     loop {
         if curdir.join("ssg.conf").exists() {
             return curdir;
@@ -47,7 +47,7 @@ fn find_base_dir() -> PathBuf {
         match curdir.parent() {
             Some(parent) => curdir = parent.to_path_buf(),
             None => panic!(
-                "Could not find `ssg.conf` in `{:?}` or any parent directory",
+                "Error: could not find `ssg.conf` in `{:?}` or any parent directory",
                 curdir
             ),
         }

@@ -16,7 +16,7 @@ pub fn gen_default_file(path: PathBuf) {
         default_date: 0000-00-00
         server_port: 8000",
     )
-    .expect("Failed to write to ssg.conf");
+    .expect("Error: failed to write to ssg.conf");
 }
 
 pub struct Config {
