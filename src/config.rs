@@ -13,7 +13,6 @@ pub fn gen_default_file(path: PathBuf) {
         site_path: _site/
         header_name: head.html
         default_title: Page Title
-        default_date: 0000-00-00
         server_port: 8000",
     )
     .expect("Error: failed to write to ssg.conf");
