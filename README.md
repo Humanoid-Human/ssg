@@ -35,9 +35,7 @@ Modify them with the syntax `option: value`.
 ## Features
 The first section of page, before the `++++`, is the frontmatter. May contain the following info:
 - `title` (`string`): Title of the page (default `Page Title`). Ex: `title: Different Page Title`
-- `date` (`string`): Date of the page (default `0000-00-00`). Ex: `date: 1969-12-31`
 - `head` (`string`): Path to an HTML file to use as the header, instead of the default, relative to `include/`. Set this to `none` to not include a header.
-- some other stuff probably
 
 ### Includes
 `[[include filename]]` attempts to copy the contents of `include/filename` into the file by default.

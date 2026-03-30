@@ -7,8 +7,7 @@ use std::{
 pub fn gen_default_file(path: PathBuf) {
     let mut f = File::create_new(path).expect("ssg.conf already exists");
     f.write_all(
-        b"
-        src_path: src/
+        b"src_path: src/
         static_path: static/
         include_path: include/
         site_path: _site/
@@ -26,7 +25,6 @@ pub struct Config {
     pub static_path: String,
     pub site_path: String,
     pub default_title: String,
-    pub default_date: String,
     pub include_path: String,
     pub header_name: String,
     pub server_port: String,
@@ -42,7 +40,6 @@ impl Config {
             include_path: "".to_string(),
             header_name: "".to_string(),
             default_title: "".to_string(),
-            default_date: "".to_string(),
             server_port: "".to_string(),
         };
 
@@ -55,27 +52,29 @@ impl Config {
                 continue;
             }
             let mut split = line.splitn(2, ":");
-            let thing = match split.next().expect("unexpected line in ssg.conf").trim() {
+            let thing = match split.next().unwrap().trim() {
                 "src_path" => &mut out.src_path,
                 "static_path" => &mut out.static_path,
                 "include_path" => &mut out.include_path,
                 "site_path" => &mut out.site_path,
                 "default_title" => &mut out.default_title,
-                "default_date" => &mut out.default_title,
                 "header_name" => &mut out.header_name,
                 "server_port" => &mut out.server_port,
-                unknown => panic!("Unknown option {unknown} in ssg.conf"),
+                unknown => {
+                    eprintln!("Warning: unknown option {unknown} in ssg.conf");
+                    continue;
+                }
             };
-            *thing = split
-                .next()
-                .expect("empty option in ssg.conf")
-                .trim()
-                .to_string();
-            if let Some(s) = thing.strip_prefix("\"") {
-                *thing = s.to_string();
-            }
-            if let Some(s) = thing.strip_suffix("\"") {
-                *thing = s.to_string();
+            if let Some(val) = split.next() {
+                *thing = val.trim().to_string();
+                if let Some(s) = thing.strip_prefix("\"") {
+                    *thing = s.to_string();
+                }
+                if let Some(s) = thing.strip_suffix("\"") {
+                    *thing = s.to_string();
+                }
+            } else {
+                eprintln!("Warning: empty option in ssg.conf");
             }
         }
 
