@@ -12,6 +12,7 @@ pub fn gen_default_file(path: PathBuf) {
         include_path: include/
         site_path: _site/
         header_name: head.html
+        footer_name: foot.html
         default_title: Page Title
         server_port: 8000",
     )
@@ -26,6 +27,7 @@ pub struct Config {
     pub default_title: String,
     pub include_path: String,
     pub header_name: String,
+    pub footer_name: String,
     pub server_port: String,
 }
 
@@ -38,6 +40,7 @@ impl Config {
             site_path: "".to_string(),
             include_path: "".to_string(),
             header_name: "".to_string(),
+            footer_name: "".to_string(),
             default_title: "".to_string(),
             server_port: "".to_string(),
         };
@@ -58,6 +61,7 @@ impl Config {
                 "site_path" => &mut out.site_path,
                 "default_title" => &mut out.default_title,
                 "header_name" => &mut out.header_name,
+                "footer_name" => &mut out.footer_name,
                 "server_port" => &mut out.server_port,
                 unknown => {
                     eprintln!("Warning: unknown option {unknown} in ssg.conf");
@@ -81,6 +85,12 @@ impl Config {
     }
 
     pub fn header_path(&self) -> PathBuf {
+        self.base_dir
+            .join(&self.include_path)
+            .join(&self.header_name)
+    }
+
+    pub fn footer_path(&self) -> PathBuf {
         self.base_dir
             .join(&self.include_path)
             .join(&self.header_name)

@@ -53,7 +53,8 @@ fn walk_dir(from: &PathBuf, to: &Path, process: bool, config: &Config) {
 }
 
 fn process_file(src: String, mut dest: File, config: &Config) {
-    let mut header = Some(config.header_path());
+    let mut head = Some(config.header_path());
+    let mut foot = Some(config.footer_path());
     let mut title = config.default_title.as_ref();
 
     let mut startline = 0;
@@ -64,15 +65,22 @@ fn process_file(src: String, mut dest: File, config: &Config) {
         let mut i = line.splitn(2, ": ");
         match i.next().unwrap() {
             "title" => title = i.next().unwrap_or(&config.default_title),
-            "header" => {
-                if let Some(b) = i.next() {
-                    if b == "none" {
-                        header = None;
+            "head" => 
+                if let Some(p) = i.next() {
+                    if p == "none" {
+                        head = None;
                     } else {
-                        header = Some(PathBuf::from(b));
+                        head = Some(PathBuf::from(p));
                     }
                 }
-            }
+            "foot" =>
+                if let Some(p) = i.next() {
+                    if p == "none" {
+                        foot = None;
+                    } else {
+                        foot = Some(PathBuf::from(p));
+                    }
+                }
             "++++" => {
                 startline = num;
                 break;
@@ -82,13 +90,13 @@ fn process_file(src: String, mut dest: File, config: &Config) {
     }
 
     if startline == 0 {
-        header = Some(config.header_path());
+        head = Some(config.header_path());
         title = &config.default_title;
     }
 
     let mut parse = "<!DOCTYPE html>\n<html>\n".to_string();
 
-    if let Some(hpath) = header
+    if let Some(hpath) = head
         && hpath.exists()
     {
         parse.push_str(&include_file(&hpath, default_replace(title)));
@@ -106,12 +114,21 @@ fn process_file(src: String, mut dest: File, config: &Config) {
     for line in lines {
         parse.push('\n');
         let replace = |c: &Captures| {
-            let path = config
+            let mut path = config
                 .base_dir
                 .join(&config.include_path)
                 .join(&c[1]);
 
             if !path.exists() {
+                path.set_extension("html");
+            }
+
+            if !path.exists() {
+                path.set_extension("md");
+            }
+
+            if !path.exists() {
+                eprintln!("Warning: included file {} not found", &c[1]);
                 return c[0].to_string();
             }
 
@@ -131,6 +148,13 @@ fn process_file(src: String, mut dest: File, config: &Config) {
         parse.push_str(&line);
     }
 
+    if let Some(fpath) = foot
+        && fpath.exists()
+    {
+        parse.push_str(&include_file(&fpath, default_replace(title)));
+        parse.push('\n');
+    }
+
     parse.push_str("\n</body>\n</html>");
 
     let mut options = markdown::Options::gfm();
@@ -143,7 +167,6 @@ fn process_file(src: String, mut dest: File, config: &Config) {
 }
 
 fn include_file(path: &Path, replace_map: Vec<(String, String)>) -> String {
-    assert!(path.exists(), "{:?} does not exist", path);
     let mut s = read_to_string(path).expect("Error: failed to read included file");
     for (key, val) in replace_map {
         s = s.replace(&format!("+{}+", key), &val);
