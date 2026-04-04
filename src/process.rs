@@ -33,10 +33,8 @@ fn walk_dir(from: &PathBuf, to: &Path, process: bool, config: &Config) {
                 println!("{}", src_path.to_str().unwrap_or("unprintable path!"));
             }
 
-            if process
-                && let Some(e) = src_path.extension()
-                && e != "html"
-            {
+            let ext = src_path.extension();
+            if process && (ext.is_none() || ext.unwrap() != "html") {
                 dest_path.set_extension("html");
                 let dest_file = File::create(dest_path).unwrap();
                 process_file(read_to_string(&src_path).unwrap(), dest_file, config);
@@ -65,7 +63,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
         let mut i = line.splitn(2, ": ");
         match i.next().unwrap() {
             "title" => title = i.next().unwrap_or(&config.default_title),
-            "head" => 
+            "head" => {
                 if let Some(p) = i.next() {
                     if p == "none" {
                         head = None;
@@ -73,7 +71,8 @@ fn process_file(src: String, mut dest: File, config: &Config) {
                         head = Some(PathBuf::from(p));
                     }
                 }
-            "foot" =>
+            }
+            "foot" => {
                 if let Some(p) = i.next() {
                     if p == "none" {
                         foot = None;
@@ -81,6 +80,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
                         foot = Some(PathBuf::from(p));
                     }
                 }
+            }
             "++++" => {
                 startline = num;
                 break;
@@ -114,10 +114,9 @@ fn process_file(src: String, mut dest: File, config: &Config) {
     for line in lines {
         parse.push('\n');
         let replace = |c: &Captures| {
-            let mut path = config
-                .base_dir
-                .join(&config.include_path)
-                .join(&c[1]);
+            let mut path = config.base_dir.join(&config.include_path).join(&c[1]);
+
+            let ext = path.extension().unwrap_or_default().to_owned();
 
             if !path.exists() {
                 path.set_extension("html");
@@ -128,6 +127,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
             }
 
             if !path.exists() {
+                path.set_extension(ext);
                 eprintln!("Warning: included file {} not found", &c[1]);
                 return c[0].to_string();
             }
