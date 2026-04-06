@@ -5,16 +5,20 @@ use std::{
 };
 
 pub fn gen_default_file(path: PathBuf) {
-    let mut f = File::create_new(path).expect("ssg.conf already exists");
+    let f = File::create_new(path);
+    if f.is_err() {
+        return;
+    }
+    let mut f = f.unwrap();
     f.write_all(
         b"src_path: src/
-        static_path: static/
-        include_path: include/
-        site_path: _site/
-        header_name: head.html
-        footer_name: foot.html
-        default_title: Page Title
-        server_port: 8000",
+static_path: static/
+include_path: include/
+site_path: _site/
+header_name: head.html
+footer_name: foot.html
+default_title: Page Title
+server_port: 8000",
     )
     .expect("Error: failed to write to ssg.conf");
 }
@@ -54,7 +58,8 @@ impl Config {
                 continue;
             }
             let mut split = line.splitn(2, ":");
-            let thing = match split.next().unwrap().trim() {
+            let key = split.next().unwrap().trim();
+            let value = match key {
                 "src_path" => &mut out.src_path,
                 "static_path" => &mut out.static_path,
                 "include_path" => &mut out.include_path,
@@ -69,15 +74,15 @@ impl Config {
                 }
             };
             if let Some(val) = split.next() {
-                *thing = val.trim().to_string();
-                if let Some(s) = thing.strip_prefix("\"") {
-                    *thing = s.to_string();
+                *value = val.trim().to_string();
+                if let Some(s) = value.strip_prefix("\"") {
+                    *value = s.to_string();
                 }
-                if let Some(s) = thing.strip_suffix("\"") {
-                    *thing = s.to_string();
+                if let Some(s) = value.strip_suffix("\"") {
+                    *value = s.to_string();
                 }
             } else {
-                eprintln!("Warning: empty option in ssg.conf");
+                eprintln!("Warning: empty option {key} in ssg.conf");
             }
         }
 

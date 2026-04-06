@@ -6,3 +6,8 @@ edition = "2024"
 [dependencies]
 markdown = "1.0.0"
 regex = "1.12.3"
+
+[profile.release]
+lto = true
+codegen-units = 12
+panic = "abort"
