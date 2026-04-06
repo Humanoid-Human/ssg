@@ -110,7 +110,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
         lines.nth(startline).unwrap();
     }
 
-    let incl_re = Regex::new(r"\[\[include (.*?)(?:\s*\|\s*(.*?))?\]\]").unwrap();
+    let incl_re = Regex::new(r"\{\{i (.*?)(?:\s*\|\s*(.*?))?\}\}").unwrap();
     for line in lines {
         parse.push('\n');
         let replace = |c: &Captures| {
@@ -169,7 +169,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
 fn include_file(path: &Path, replace_map: Vec<(String, String)>) -> String {
     let mut s = read_to_string(path).expect("Error: failed to read included file");
     for (key, val) in replace_map {
-        s = s.replace(&format!("+{}+", key), &val);
+        s = s.replace(&format!("{{{}}}", key), &val);
     }
 
     s

@@ -16,10 +16,10 @@ and rebuild using the contents of `src` and `static`.
 `ssg server`: Runs `ssg build` and then starts a localhost server, on port 8000 by default.
 
 ## Directory Structure
-- `src`: Stuff that should be processed by the tool, typically MarkDown files. The only exception is that files ending in `.html` will not be processed.
-- `static`: Stuff that should be included in the site but not processed, such as images, css files, etc.
-- `include`: Stuff that is included into files in `src`.
-- `_site`: The generated site. Do not edit files in this directory, as it is removed and re-created when the `ssg build` or `ssg server` is run.
+- `src/`: Stuff that should be processed by the tool, typically MarkDown files. The only exception is that files ending in `.html` will not be processed.
+- `static/`: Stuff that should be included in the site but not processed, such as images, css files, etc. These files will be symlinked directly into `_site/`.
+- `include/`: Stuff that is included into files in `src/`.
+- `_site/`: The generated site. Do not edit files in this directory, as it is removed and re-created when the `ssg build` or `ssg server` is run.
 - `ssg.conf`: Configuration file.
 
 ## Configuration
@@ -42,8 +42,9 @@ The first section of page, before the `++++`, is the frontmatter. May contain th
 - `foot` (`string`): Same as `head`, but for the footer.
 
 ### Includes
-`[[include filename]]` attempts to copy the contents of `include/filename` into the file by default.
-This path can be changed in the configuration.
+`{{i filename}}` attempts to copy the contents of `include/filename` into the file.
+If this file does not exist, then the file extensions `.html` and `.md` will be tried.
+The include path can be changed in the configuration.
 Recursive includes are not supported; only includes present in the original file will be processed.
 
 If it exists, `include/head.html` is included into the beginning of the file.
@@ -52,13 +53,13 @@ Similarly, if it exists, `include/foot.html` is included into the end of the fil
 However, unlike `head.html`, the footer will be enclosed within the body tags.
 To disable these, add `head: none` and `foot: none`, respectively, to the frontmatter.
 
-In any of the above file inclusions, `+title+` will be replaced with the title of the page.
+In any of the above file inclusions, `{title}` will be replaced with the title of the page.
 Additional replacements can be defined in the include statement; for example,
-`[[include page | foo = bar | baz = boo ]]`
-will include the file `include/page`, with every instance of `+foo+` replaced with `bar`, and every instance of `+baz+` replaced with `boo`.
+`{{i page | foo = bar | baz = boo }}`
+will include the file `include/page`, with every instance of `{foo}` replaced with `bar`, and every instance of `{baz}` replaced with `boo`.
 
 ## Dependencies
-This project depends on the following libraries:
+`ssg` uses the following libraries:
 - [`markdown`](https://crates.io/crates/markdown)
 - [`regex`](https://crates.io/crates/regex)
 
