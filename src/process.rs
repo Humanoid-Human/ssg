@@ -94,41 +94,41 @@ fn process_file(src: String, mut dest: File, config: &Config) {
         title = &config.default_title;
     }
 
-    let mut parse = "<!DOCTYPE html>\n<html>\n".to_string();
+    let mut header = "<!DOCTYPE html>\n<html>\n".to_string();
 
     if let Some(hpath) = head
         && hpath.exists()
     {
-        parse.push_str(&include_file(&hpath, default_replace(title)));
-        parse.push('\n');
+        header.push_str(&include_file(&hpath, default_replace(title)));
+        header.push('\n');
     }
 
-    parse.push_str("<body>\n");
+    header.push_str("<body>\n");
+
+    let mut parse = String::new();
 
     let mut lines = src.lines();
     if startline != 0 {
         lines.nth(startline).unwrap();
     }
 
-    let incl_re = Regex::new(r"\{\{i (.*?)(?:\s*\|\s*(.*?))?\}\}").unwrap();
+    let incl_re = Regex::new(r"\{\{i (.*?)(?:\s*\|\s*(.*?))?}}").unwrap();
     for line in lines {
         parse.push('\n');
         let replace = |c: &Captures| {
             let mut path = config.base_dir.join(&config.include_path).join(&c[1]);
 
-            let ext = path.extension().unwrap_or_default().to_owned();
-
-            if !path.exists() {
-                path.set_extension("html");
+            if path.extension().is_none() {
+                if !path.exists() {
+                    path.set_extension("html");
+                }
+                if !path.exists() {
+                    path.set_extension("md");
+                }
             }
 
             if !path.exists() {
-                path.set_extension("md");
-            }
-
-            if !path.exists() {
-                path.set_extension(ext);
-                eprintln!("Warning: included file {} not found", &c[1]);
+                eprintln!("Warning: {}{} not found", &config.include_path, &c[1]);
                 return c[0].to_string();
             }
 
@@ -155,15 +155,16 @@ fn process_file(src: String, mut dest: File, config: &Config) {
         parse.push('\n');
     }
 
-    parse.push_str("\n</body>\n</html>");
-
     let mut options = markdown::Options::gfm();
     options.compile.allow_dangerous_html = true;
     options.compile.gfm_tagfilter = false;
 
     let html = markdown::to_html_with_options(&parse, &options).unwrap();
-    dest.write_all(&html.into_bytes())
-        .expect("Error: failed to write to file");
+
+    let write_err = "Error: failed to write to file";
+    dest.write_all(&header.into_bytes()).expect(write_err);
+    dest.write_all(&html.into_bytes()).expect(write_err);
+    dest.write_all(b"</body></html>").expect(write_err);
 }
 
 fn include_file(path: &Path, replace_map: Vec<(String, String)>) -> String {

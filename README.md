@@ -16,10 +16,10 @@ and rebuild using the contents of `src` and `static`.
 `ssg server`: Runs `ssg build` and then starts a localhost server, on port 8000 by default.
 
 ## Directory Structure
-- `src/`: Stuff that should be processed by the tool, typically MarkDown files. The only exception is that files ending in `.html` will not be processed.
-- `static/`: Stuff that should be included in the site but not processed, such as images, css files, etc. These files will be symlinked directly into `_site/`.
-- `include/`: Stuff that is included into files in `src/`.
-- `_site/`: The generated site. Do not edit files in this directory, as it is removed and re-created when the `ssg build` or `ssg server` is run.
+- `src/`: Files that should be processed by the tool, typically MarkDown. Files ending in `.html` will not be processed.
+- `static/`: Files that should be included in the site but not processed, such as images, stylesheets, etc. These files will be symlinked directly into `_site/`.
+- `include/`: Files for including into files in `src/` (see [includes](#includes)).
+- `_site/`: The generated site. Do not edit files in this directory, as they are removed and re-created when the `ssg build` or `ssg server` is run.
 - `ssg.conf`: Configuration file.
 
 ## Configuration
@@ -42,8 +42,8 @@ The first section of page, before the `++++`, is the frontmatter. May contain th
 - `foot` (`string`): Same as `head`, but for the footer.
 
 ### Includes
-`{{i filename}}` attempts to copy the contents of `include/filename` into the file.
-If this file does not exist, then the file extensions `.html` and `.md` will be tried.
+`{{i filename}}` attempts to copy the contents of `include/filename` into the file during processing.
+If this file does not exist, and `filename` does not have a file extension, then the file extensions `.html` and `.md` will be checked.
 The include path can be changed in the configuration.
 Recursive includes are not supported; only includes present in the original file will be processed.
 
