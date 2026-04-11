@@ -61,7 +61,7 @@ will include the file `include/page`, with every instance of `{foo}` replaced wi
 ## Dependencies
 `ssg` uses the following libraries:
 - [`markdown`](https://crates.io/crates/markdown)
-- [`regex`](https://crates.io/crates/regex)
+- [`regex-lite`](https://crates.io/crates/regex-lite)
 
 ## Building
 Clone the repo and build with `cargo`.

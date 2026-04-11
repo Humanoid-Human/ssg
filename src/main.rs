@@ -11,19 +11,18 @@ fn main() {
         "init" => {
             let dir_error = |name| format!("Error: failed to create directory '{}'", name);
             config::gen_default_file(PathBuf::from("ssg.conf"));
-            fs::create_dir("src").expect(dir_error("src").as_str());
-            fs::create_dir("static").expect(dir_error("static").as_str());
-            fs::create_dir("include").expect(dir_error("include").as_str());
-            fs::create_dir("_site").expect(dir_error("_site").as_str());
+            fs::create_dir("src").unwrap_or_else(|_| panic!("{}", &dir_error("src")));
+            fs::create_dir("static").unwrap_or_else(|_| panic!("{}", &dir_error("static")));
+            fs::create_dir("include").unwrap_or_else(|_| panic!("{}", &dir_error("include")));
+            fs::create_dir("_site").unwrap_or_else(|_| panic!("{}", &dir_error("_site")));
             let mut head_file = fs::File::create_new("include/head.html")
                 .expect("Error: failed to create file 'include/head.html'");
             head_file
-                .write(b"<head><meta charset=\"UTF-8\"><title>{title}</title>")
+                .write_all(b"<head><meta charset=\"UTF-8\"><title>{title}</title>")
                 .unwrap();
             head_file
-                .write(b"<link href=\"style.css\" rel=\"stylesheet\"></head>")
+                .write_all(b"<link href=\"style.css\" rel=\"stylesheet\"></head>")
                 .unwrap();
-            head_file.flush().unwrap();
         }
         "build" => {
             let base = find_base_dir();

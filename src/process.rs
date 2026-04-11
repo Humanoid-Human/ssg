@@ -1,5 +1,5 @@
 use crate::config::Config;
-use regex::{Captures, Regex};
+use regex_lite::{Captures, Regex};
 use std::{
     fs::{self, File, read_to_string},
     io::Write,
