@@ -109,6 +109,10 @@ impl Config {
         self.base_dir.join(&self.static_path)
     }
 
+    pub fn abs_include(&self) -> PathBuf {
+        self.base_dir.join(&self.include_path)
+    }
+
     pub fn abs_site(&self) -> PathBuf {
         self.base_dir.join(&self.site_path)
     }

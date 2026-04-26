@@ -68,7 +68,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
                     if p == "none" {
                         head = None;
                     } else {
-                        head = Some(PathBuf::from(p));
+                        head = Some(config.abs_include().join(PathBuf::from(p)));
                     }
                 }
             }
@@ -77,7 +77,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
                     if p == "none" {
                         foot = None;
                     } else {
-                        foot = Some(PathBuf::from(p));
+                        foot = Some(config.abs_include().join(PathBuf::from(p)));
                     }
                 }
             }
@@ -89,17 +89,12 @@ fn process_file(src: String, mut dest: File, config: &Config) {
         }
     }
 
-    if startline == 0 {
-        head = Some(config.header_path());
-        title = &config.default_title;
-    }
-
     let mut header = "<!DOCTYPE html>\n<html>\n".to_string();
 
     if let Some(hpath) = head
         && hpath.exists()
     {
-        header.push_str(&include_file(&hpath, default_replace(title)));
+        header.push_str(&include_file(&hpath, None));
         header.push('\n');
     }
 
@@ -117,7 +112,6 @@ fn process_file(src: String, mut dest: File, config: &Config) {
         parse.push('\n');
         let replace = |c: &Captures| {
             let mut path = config.base_dir.join(&config.include_path).join(&c[1]);
-
             if path.extension().is_none() {
                 if !path.exists() {
                     path.set_extension("html");
@@ -132,7 +126,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
                 return c[0].to_string();
             }
 
-            let mut replace_map = default_replace(title);
+            let mut replace_map = Vec::new();
             if let Some(opts) = &c.get(2) {
                 for pair in opts.as_str().split("|") {
                     let mut kv = pair.splitn(2, "=");
@@ -142,7 +136,7 @@ fn process_file(src: String, mut dest: File, config: &Config) {
                     }
                 }
             }
-            include_file(&path, replace_map)
+            include_file(&path, Some(replace_map))
         };
         let line = incl_re.replace_all(line, replace);
         parse.push_str(&line);
@@ -151,9 +145,11 @@ fn process_file(src: String, mut dest: File, config: &Config) {
     if let Some(fpath) = foot
         && fpath.exists()
     {
-        parse.push_str(&include_file(&fpath, default_replace(title)));
+        parse.push_str(&include_file(&fpath, None));
         parse.push('\n');
     }
+
+    parse = parse.replace("{title}", title);
 
     let mut options = markdown::Options::gfm();
     options.compile.allow_dangerous_html = true;
@@ -167,15 +163,13 @@ fn process_file(src: String, mut dest: File, config: &Config) {
     dest.write_all(b"</body></html>").expect(write_err);
 }
 
-fn include_file(path: &Path, replace_map: Vec<(String, String)>) -> String {
+fn include_file(path: &Path, replace_map: Option<Vec<(String, String)>>) -> String {
     let mut s = read_to_string(path).expect("Error: failed to read included file");
-    for (key, val) in replace_map {
-        s = s.replace(&format!("{{{}}}", key), &val);
+    if let Some(replace_map) = replace_map {
+        for (key, val) in replace_map {
+            s = s.replace(&format!("{{{}}}", key), &val);
+        }
     }
 
     s
-}
-
-fn default_replace(title: &str) -> Vec<(String, String)> {
-    vec![("title".to_string(), title.to_string())]
 }

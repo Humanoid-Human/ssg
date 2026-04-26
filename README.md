@@ -24,6 +24,7 @@ and rebuild using the contents of `src` and `static`.
 
 ## Configuration
 Configure stuff in `ssg.conf`. There exist the following options:
+
 - `src_path`
 - `static_path`
 - `include_path`
@@ -31,15 +32,19 @@ Configure stuff in `ssg.conf`. There exist the following options:
 - `header_name`
 - `footer_name`
 - `default_title`
-- `default_date`
 - `server_port`
+
 Modify them with the syntax `option: value`.
 
 ## Features
-The first section of page, before the `++++`, is the frontmatter. May contain the following info:
-- `title` (`string`): Title of the page (default `Page Title`). Ex: `title: Different Page Title`
-- `head` (`string`): Path to an HTML file to use as the header, instead of the default, relative to `include/`. Set this to `none` to not include a header.
-- `foot` (`string`): Same as `head`, but for the footer.
+The first section of a file in `src`, separated from the main content by `++++`, is the frontmatter.
+It may contain the following variables, set using `key: value` syntax:
+
+- `title`: Title of the page.
+- `head`: Path to an HTML file to use as the header, instead of the default, relative to `include/`. Set this to `none` to not include a header.
+- `foot`: Same as `head`, but for the footer.
+
+All of the above variables are optional.
 
 ### Includes
 `{{i filename}}` attempts to copy the contents of `include/filename` into the file during processing.
@@ -47,16 +52,20 @@ If this file does not exist, and `filename` does not have a file extension, then
 The include path can be changed in the configuration.
 Recursive includes are not supported; only includes present in the original file will be processed.
 
+Replacements can be defined in the include statement; for example,
+`{{i page | foo = bar | baz = boo }}`
+will include the file `include/page`, with every instance of `{foo}` replaced with `bar`,
+and every instance of `{baz}` replaced with `boo`.
+
+### Header & Footer
 If it exists, `include/head.html` is included into the beginning of the file.
 This is intended for use with the HTML `<head>` tag.
 Similarly, if it exists, `include/foot.html` is included into the end of the file.
 However, unlike `head.html`, the footer will be enclosed within the body tags.
 To disable these, add `head: none` and `foot: none`, respectively, to the frontmatter.
 
-In any of the above file inclusions, `{title}` will be replaced with the title of the page.
-Additional replacements can be defined in the include statement; for example,
-`{{i page | foo = bar | baz = boo }}`
-will include the file `include/page`, with every instance of `{foo}` replaced with `bar`, and every instance of `{baz}` replaced with `boo`.
+### Title replacement
+The string `{title}` will be replaced with the title of the page, wherever it appears, after all other processing.
 
 ## Dependencies
 `ssg` uses the following libraries:
