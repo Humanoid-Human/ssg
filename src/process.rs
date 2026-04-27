@@ -52,7 +52,8 @@ fn walk_dir(from: &PathBuf, to: &Path, process: bool, config: &Config) {
 
 fn process_file(src: String, mut dest: File, config: &Config) {
     let mut head = Some(config.header_path());
-    let mut foot = Some(config.footer_path());
+    let mut page_start = Some(config.page_start_path());
+    let mut page_end = Some(config.page_end_path());
     let mut title = config.default_title.as_ref();
 
     let mut startline = 0;
@@ -72,12 +73,21 @@ fn process_file(src: String, mut dest: File, config: &Config) {
                     }
                 }
             }
-            "foot" => {
+            "page_start" => {
                 if let Some(p) = i.next() {
                     if p == "none" {
-                        foot = None;
+                        page_start = None;
                     } else {
-                        foot = Some(config.abs_include().join(PathBuf::from(p)));
+                        page_start = Some(config.abs_include().join(PathBuf::from(p)));
+                    }
+                }
+            }
+            "page_end" => {
+                if let Some(p) = i.next() {
+                    if p == "none" {
+                        page_end = None;
+                    } else {
+                        page_end = Some(config.abs_include().join(PathBuf::from(p)));
                     }
                 }
             }
@@ -89,12 +99,14 @@ fn process_file(src: String, mut dest: File, config: &Config) {
         }
     }
 
+    let title_replace = Some(vec![("title", title)]);
+
     let mut header = "<!DOCTYPE html>\n<html>\n".to_string();
 
     if let Some(hpath) = head
         && hpath.exists()
     {
-        header.push_str(&include_file(&hpath, None));
+        header.push_str(&include_file(&hpath, &title_replace));
         header.push('\n');
     }
 
@@ -132,21 +144,14 @@ fn process_file(src: String, mut dest: File, config: &Config) {
                     let mut kv = pair.splitn(2, "=");
                     let key = kv.next().unwrap().trim();
                     if let Some(val) = kv.next() {
-                        replace_map.push((key.to_string(), val.trim().to_string()));
+                        replace_map.push((key, val.trim()));
                     }
                 }
             }
-            include_file(&path, Some(replace_map))
+            include_file(&path, &Some(replace_map))
         };
         let line = incl_re.replace_all(line, replace);
         parse.push_str(&line);
-    }
-
-    if let Some(fpath) = foot
-        && fpath.exists()
-    {
-        parse.push_str(&include_file(&fpath, None));
-        parse.push('\n');
     }
 
     parse = parse.replace("{title}", title);
@@ -159,15 +164,21 @@ fn process_file(src: String, mut dest: File, config: &Config) {
 
     let write_err = "Error: failed to write to file";
     dest.write_all(&header.into_bytes()).expect(write_err);
+    if let Some(start) = page_start {
+        dest.write_all(&include_file(&start, &title_replace).into_bytes()).expect(write_err);
+    }
     dest.write_all(&html.into_bytes()).expect(write_err);
+    if let Some(end) = page_end {
+        dest.write_all(&include_file(&end, &title_replace).into_bytes()).expect(write_err);
+    }
     dest.write_all(b"</body></html>").expect(write_err);
 }
 
-fn include_file(path: &Path, replace_map: Option<Vec<(String, String)>>) -> String {
+fn include_file(path: &Path, replace_map: &Option<Vec<(&str, &str)>>) -> String {
     let mut s = read_to_string(path).expect("Error: failed to read included file");
     if let Some(replace_map) = replace_map {
         for (key, val) in replace_map {
-            s = s.replace(&format!("{{{}}}", key), &val);
+            s = s.replace(&format!("{{{}}}", key), val);
         }
     }
 

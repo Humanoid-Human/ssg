@@ -30,7 +30,8 @@ Configure stuff in `ssg.conf`. There exist the following options:
 - `include_path`
 - `site_path`
 - `header_name`
-- `footer_name`
+- `page_start_name`
+- `page_end_name`
 - `default_title`
 - `server_port`
 
@@ -41,8 +42,9 @@ The first section of a file in `src`, separated from the main content by `++++`,
 It may contain the following variables, set using `key: value` syntax:
 
 - `title`: Title of the page.
-- `head`: Path to an HTML file to use as the header, instead of the default, relative to `include/`. Set this to `none` to not include a header.
-- `foot`: Same as `head`, but for the footer.
+- `head`: Path to an HTML file to use as the header, instead of the default, relative to `include/`. Set to `none` to disable header.
+- `page_start`: Path to a page-start file to use instead of the default. Set to `none` to disable.
+- `page_end`: Path to a page-end file to use instead of the default. Set to `none` to disable.
 
 All of the above variables are optional.
 
@@ -58,11 +60,15 @@ will include the file `include/page`, with every instance of `{foo}` replaced wi
 and every instance of `{baz}` replaced with `boo`.
 
 ### Header & Footer
-If it exists, `include/head.html` is included into the beginning of the file.
+If it exists, `include/head.html` is included into the beginning of the file, after `<!DOCTYPE html><html>`.
 This is intended for use with the HTML `<head>` tag.
-Similarly, if it exists, `include/foot.html` is included into the end of the file.
-However, unlike `head.html`, the footer will be enclosed within the body tags.
-To disable these, add `head: none` and `foot: none`, respectively, to the frontmatter.
+The default path can be modified in `ssg.conf`, and the header used for a specific page can be modified in the frontmatter.
+To disable, set
+
+### Page Start & End
+If it exists, `include/page_start.html` is included into the start of the body,
+and `include/page_end.html` is included into the end of the body.
+The default paths can be modified in `ssg.conf`, and the page start/end used for a specific page can be modified in the frontmatter.
 
 ### Title replacement
 The string `{title}` will be replaced with the title of the page, wherever it appears, after all other processing.

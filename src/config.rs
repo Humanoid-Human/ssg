@@ -16,7 +16,8 @@ static_path: static/
 include_path: include/
 site_path: _site/
 header_name: head.html
-footer_name: foot.html
+page_start_name: page_start.html
+page_end_name: page_end.html
 default_title: Page Title
 server_port: 8000",
     )
@@ -31,7 +32,8 @@ pub struct Config {
     pub default_title: String,
     pub include_path: String,
     pub header_name: String,
-    pub footer_name: String,
+    pub page_start_name: String,
+    pub page_end_name: String,
     pub server_port: String,
 }
 
@@ -44,7 +46,8 @@ impl Config {
             site_path: "".to_string(),
             include_path: "".to_string(),
             header_name: "".to_string(),
-            footer_name: "".to_string(),
+            page_start_name: "".to_string(),
+            page_end_name: "".to_string(),
             default_title: "".to_string(),
             server_port: "".to_string(),
         };
@@ -66,7 +69,8 @@ impl Config {
                 "site_path" => &mut out.site_path,
                 "default_title" => &mut out.default_title,
                 "header_name" => &mut out.header_name,
-                "footer_name" => &mut out.footer_name,
+                "page_start_name" => &mut out.page_start_name,
+                "page_end_name" => &mut out.page_end_name,
                 "server_port" => &mut out.server_port,
                 unknown => {
                     eprintln!("Warning: unknown option {unknown} in ssg.conf");
@@ -95,10 +99,16 @@ impl Config {
             .join(&self.header_name)
     }
 
-    pub fn footer_path(&self) -> PathBuf {
+    pub fn page_start_path(&self) -> PathBuf {
         self.base_dir
             .join(&self.include_path)
-            .join(&self.header_name)
+            .join(&self.page_start_name)
+    }
+
+    pub fn page_end_path(&self) -> PathBuf {
+        self.base_dir
+            .join(&self.include_path)
+            .join(&self.page_end_name)
     }
 
     pub fn abs_src(&self) -> PathBuf {
