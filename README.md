@@ -1,10 +1,5 @@
 # ssg
-Simple static site generator.
-
-By default, the source (Markdown) goes in `src`, and the output goes in `_site`.
-These paths can be configured.
-
-`ssg` uses the GFM extension to CommonMark.
+Simple static site generator from GitHub-flavoured Markdown.
 
 ## Usage
 `ssg init`: Initializes the current directory. This command generates the `_site`,
@@ -16,14 +11,14 @@ and rebuild using the contents of `src` and `static`.
 `ssg server`: Runs `ssg build` and then starts a localhost server, on port 8000 by default.
 
 ## Directory Structure
-- `src/`: Files that should be processed by the tool, typically MarkDown. Files ending in `.html` will not be processed.
+- `src/`: Files that should be processed by the tool. Files ending in `.html` will not be processed.
 - `static/`: Files that should be included in the site but not processed, such as images, stylesheets, etc. These files will be symlinked directly into `_site/`.
 - `include/`: Files for including into files in `src/` (see [includes](#includes)).
 - `_site/`: The generated site. Do not edit files in this directory, as they are removed and re-created when the `ssg build` or `ssg server` is run.
 - `ssg.conf`: Configuration file.
 
 ## Configuration
-Configure stuff in `ssg.conf`. There exist the following options:
+Configuration is in `ssg.conf`. There exist the following options:
 
 - `src_path`
 - `static_path`
